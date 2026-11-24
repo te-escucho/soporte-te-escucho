@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TE ESCUCHO · Centro de Cuentas y Privacidad</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --lila: #7955A1;
+      --lila-deep: #381B4E;
+      --turquesa: #55B9B0;
+      --rosa: #F3A5BC;
+      --bg: #FAF6FC;
+      --input-bg: #F6F2F9;
+      --muted: #6C5B7D;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--lila-deep);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+    .card {
+      width: 100%;
+      max-width: 460px;
+      background: #FFFFFF;
+      border-radius: 28px;
+      padding: 30px 24px;
+      box-shadow: 0 12px 32px rgba(99, 62, 117, 0.08);
+      text-align: center;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      background: #F4ECFA;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 25px;
+      font-weight: 900;
+      color: var(--lila);
+      margin-bottom: 3px;
+      letter-spacing: -0.3px;
+    }
+    .subtitle {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #2A738A;
+      margin-bottom: 20px;
+    }
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      background: #F3EEF8;
+      padding: 4px;
+      border-radius: 16px;
+      margin-bottom: 18px;
+    }
+    .tab-btn {
+      border: none;
+      background: transparent;
+      border-radius: 12px;
+      padding: 8px 6px;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: #FFFFFF;
+      color: var(--lila-deep);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+    .status-box {
+      background: #F6F2F9;
+      border-radius: 18px;
+      padding: 15px 16px;
+      font-size: 13.8px;
+      font-weight: 700;
+      color: var(--muted);
+      line-height: 1.45;
+      margin-bottom: 16px;
+    }
+    .status-box.ok {
+      background: #EAF7F1;
+      color: #1E6B4C;
+    }
+    .status-box.err {
+      background: #FDF0F5;
+      color: #B43372;
+    }
+    .field {
+      width: 100%;
+      height: 48px;
+      border: none;
+      outline: none;
+      border-radius: 24px;
+      background: var(--input-bg);
+      padding: 0 18px;
+      font-family: inherit;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--lila-deep);
+      margin-bottom: 12px;
+    }
+    .field:focus {
+      box-shadow: 0 0 0 2px rgba(121, 85, 161, 0.25);
+    }
+    .btn {
+      width: 100%;
+      height: 48px;
+      border: none;
+      border-radius: 24px;
+      background: var(--lila);
+      color: #FFFFFF;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn.danger {
+      background: #B43372;
+    }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .info-section {
+      text-align: left;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--lila-deep);
+      line-height: 1.5;
+    }
+    .info-card {
+      background: #FAF6FC;
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .info-card h3 {
+      font-size: 14.5px;
+      font-weight: 900;
+      color: var(--lila);
+      margin-bottom: 6px;
+    }
+    .info-card ul {
+      padding-left: 18px;
+    }
+    .info-card li {
+      margin-bottom: 4px;
+    }
+    .hidden { display: none; }
+    .footer {
+      margin-top: 18px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#7955A1"/>
+        <path d="M4 12h4l2-4 3 8 2-4h5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h1>TE ESCUCHO</h1>
+    <p class="subtitle">Centro de Seguridad, Cuenta y Privacidad</p>
+
+    <div class="tabs" id="navTabs">
+      <button class="tab-btn active" data-tab="cuenta">Mi cuenta</button>
+      <button class="tab-btn" data-tab="privacidad">Privacidad</button>
+      <button class="tab-btn" data-tab="eliminar">Eliminar datos</button>
+    </div>
+
+    <!-- PANEL 1: CUENTA (Confirmación / Recuperación de contraseña) -->
+    <div id="panel-cuenta">
+      <div id="status" class="status-box">
+        Abre un enlace de confirmación o recuperación desde tu correo, o solicita un correo de recuperación aquí abajo.
+      </div>
+
+      <form id="resetForm" class="hidden">
+        <input id="pass1" class="field" type="password" minlength="6" placeholder="Nueva contraseña (mín. 6 caracteres)" required />
+        <input id="pass2" class="field" type="password" minlength="6" placeholder="Confirmar nueva contraseña" required />
+        <button id="submitBtn" class="btn" type="submit">Guardar nueva contraseña</button>
+      </form>
+
+      <form id="requestResetForm">
+        <input id="recoveryEmail" class="field" type="email" placeholder="Correo electrónico de tu cuenta" required />
+        <button id="requestBtn" class="btn" type="submit">Enviar enlace de recuperación</button>
+      </form>
+    </div>
+
+    <!-- PANEL 2: PRIVACIDAD Y PROTECCIÓN DE MENORES -->
+    <div id="panel-privacidad" class="info-section hidden">
+      <div class="info-card">
+        <h3>Privacidad desde el diseño</h3>
+        <p>TE ESCUCHO es una aplicación educativa de bienestar adolescente (12 a 19 años). Recopilamos únicamente lo mínimo indispensable para que puedas guardar tus estrellas y hábitos:</p>
+        <ul>
+          <li>Alias o apodo (no pedimos tu nombre legal completo).</li>
+          <li>Correo electrónico únicamente para autenticación y recuperación de contraseña.</li>
+          <li>Rango de edad opcional (12–14, 15–17, 18–19).</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h3>Lo que NUNCA hacemos</h3>
+        <ul>
+          <li>No mostramos perfiles públicos, listas de amigos ni rankings comparativos.</li>
+          <li>No solicitamos ubicación GPS, agenda de contactos ni fotografías personales.</li>
+          <li>No vendemos ni compartimos información con terceros publicitarios.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- PANEL 3: ELIMINACIÓN DE CUENTA Y DATOS (Requisito Play Store) -->
+    <div id="panel-eliminar" class="info-section hidden">
+      <div class="info-card">
+        <h3>¿Cómo eliminar tu cuenta y datos?</h3>
+        <p>Puedes desactivar o eliminar tu cuenta en cualquier momento de dos formas:</p>
+        <ul>
+          <li><strong>Desde la app móvil:</strong> Entra a <em>Perfil → Privacidad → Desactivar cuenta y salir</em>.</li>
+          <li><strong>Desde esta página:</strong> Inicia sesión abajo con tu correo y contraseña para desactivar tu cuenta de inmediato.</li>
+        </ul>
+      </div>
+      <div id="deleteStatus" class="status-box hidden"></div>
+      <form id="deleteForm">
+        <input id="delEmail" class="field" type="email" placeholder="Tu correo electrónico" required />
+        <input id="delPass" class="field" type="password" placeholder="Tu contraseña actual" required />
+        <button id="delBtn" class="btn danger" type="submit">Confirmar eliminación de cuenta</button>
+      </form>
+    </div>
+
+    <p class="footer">Tu bienestar, un día a la vez 💜</p>
+  </div>
+
+  <script>
+    // Credenciales públicas del cliente (protegidas por RLS en Supabase)
+    const SUPABASE_URL = 'https://spwupqdkcuitfygbwrbk.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_zJhgdNZKEYIxt2UDG7ge9w_pUYqdU1W';
+
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    const statusEl = document.getElementById('status');
+    const resetForm = document.getElementById('resetForm');
+    const requestResetForm = document.getElementById('requestResetForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const requestBtn = document.getElementById('requestBtn');
+
+    // Manejo de pestañas y hash navigation (#privacidad / #eliminar)
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const panels = {
+      cuenta: document.getElementById('panel-cuenta'),
+      privacidad: document.getElementById('panel-privacidad'),
+      eliminar: document.getElementById('panel-eliminar'),
+    };
+
+    function activateTab(tabName) {
+      if (!panels[tabName]) return;
+      tabBtns.forEach((b) => b.classList.toggle('active', b.dataset.tab === tabName));
+      Object.entries(panels).forEach(([k, el]) => {
+        el.classList.toggle('hidden', k !== tabName);
+      });
+    }
+
+    tabBtns.forEach((btn) => {
+      btn.addEventListener('click', () => activateTab(btn.dataset.tab));
+    });
+
+    function setStatus(text, type = '') {
+      statusEl.textContent = text;
+      statusEl.className = 'status-box ' + type;
+    }
+
+    async function init() {
+      const hashStr = window.location.hash.substring(1);
+      if (hashStr === 'privacidad') activateTab('privacidad');
+      if (hashStr === 'eliminar' || hashStr === 'eliminar-cuenta') activateTab('eliminar');
+
+      const hashParams = new URLSearchParams(hashStr);
+      const queryParams = new URLSearchParams(window.location.search);
+
+      const errorDesc = hashParams.get('error_description') || queryParams.get('error_description');
+      if (errorDesc) {
+        activateTab('cuenta');
+        setStatus('El enlace expiró o ya no es válido. Solicita un enlace nuevo abajo.', 'err');
+        return;
+      }
+
+      const type = hashParams.get('type') || queryParams.get('type');
+      const code = queryParams.get('code');
+      const tokenHash = queryParams.get('token_hash');
+
+      if (code) {
+        setStatus('Verificando tu enlace de seguridad...');
+        const { error } = await client.auth.exchangeCodeForSession(code);
+        if (error) {
+          setStatus('El enlace expiró o ya fue utilizado. Solicita uno nuevo abajo.', 'err');
+          return;
+        }
+      } else if (tokenHash && type) {
+        setStatus('Verificando tu enlace de seguridad...');
+        const { error } = await client.auth.verifyOtp({ token_hash: tokenHash, type });
+        if (error) {
+          setStatus('No pudimos verificar el enlace. Solicita uno nuevo abajo.', 'err');
+          return;
+        }
+      }
+
+      const { data: { session } } = await client.auth.getSession();
+
+      if (type === 'recovery' || (session && window.location.hash.includes('type=recovery'))) {
+        activateTab('cuenta');
+        setStatus('Escribe tu nueva contraseña para recuperar el acceso a tu cuenta.');
+        resetForm.classList.remove('hidden');
+        requestResetForm.classList.add('hidden');
+        return;
+      }
+
+      if (session || type === 'signup' || type === 'email') {
+        activateTab('cuenta');
+        requestResetForm.classList.add('hidden');
+        setStatus('¡Tu correo fue confirmado con éxito! Ya puedes volver a la app TE ESCUCHO e iniciar sesión.', 'ok');
+      }
+    }
+
+    client.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        activateTab('cuenta');
+        setStatus('Escribe tu nueva contraseña para recuperar el acceso a tu cuenta.');
+        resetForm.classList.remove('hidden');
+        requestResetForm.classList.add('hidden');
+      }
+    });
+
+    // Guardar nueva contraseña
+    resetForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const p1 = document.getElementById('pass1').value;
+      const p2 = document.getElementById('pass2').value;
+      if (p1 !== p2) {
+        setStatus('Las contraseñas no coinciden. Inténtalo de nuevo.', 'err');
+        return;
+      }
+      submitBtn.disabled = true;
+      const { error } = await client.auth.updateUser({ password: p1 });
+      submitBtn.disabled = false;
+
+      if (error) {
+        setStatus('Error al actualizar: ' + error.message, 'err');
+        return;
+      }
+      resetForm.classList.add('hidden');
+      setStatus('¡Contraseña actualizada correctamente! Ya puedes regresar a la app TE ESCUCHO e iniciar sesión.', 'ok');
+    });
+
+    // Solicitar correo de recuperación desde la web
+    requestResetForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('recoveryEmail').value.trim();
+      if (!email) return;
+      requestBtn.disabled = true;
+      const { error } = await client.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin,
+      });
+      requestBtn.disabled = false;
+      if (error) {
+        setStatus('No pudimos enviar el correo: ' + error.message, 'err');
+        return;
+      }
+      setStatus('Enviamos un enlace de recuperación a ' + email + '. Revisa tu bandeja de entrada o Spam.', 'ok');
+    });
+
+    // Eliminación de cuenta vía web
+    const deleteForm = document.getElementById('deleteForm');
+    const deleteStatus = document.getElementById('deleteStatus');
+    const delBtn = document.getElementById('delBtn');
+
+    deleteForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('delEmail').value.trim();
+      const password = document.getElementById('delPass').value;
+
+      delBtn.disabled = true;
+      deleteStatus.classList.remove('hidden');
+      deleteStatus.className = 'status-box';
+      deleteStatus.textContent = 'Verificando cuenta...';
+
+      const { data, error: signErr } = await client.auth.signInWithPassword({ email, password });
+      if (signErr || !data.user) {
+        delBtn.disabled = false;
+        deleteStatus.className = 'status-box err';
+        deleteStatus.textContent = 'Correo o contraseña incorrectos.';
+        return;
+      }
+
+      const { error: updErr } = await client.from('profiles').update({
+        is_active: false,
+        alias: 'Cuenta eliminada',
+        notification_enabled: false,
+        updated_at: new Date().toISOString(),
+      }).eq('id', data.user.id);
+
+      await client.auth.signOut();
+      delBtn.disabled = false;
+
+      if (updErr) {
+        deleteStatus.className = 'status-box err';
+        deleteStatus.textContent = 'Ocurrió un error al procesar la solicitud.';
+        return;
+      }
+
+      deleteForm.classList.add('hidden');
+      deleteStatus.className = 'status-box ok';
+      deleteStatus.textContent = 'Tu cuenta fue desactivada y tus datos personales fueron limpiados correctamente.';
+    });
+
+    init();
+  </script>
+</body>
+</html>
